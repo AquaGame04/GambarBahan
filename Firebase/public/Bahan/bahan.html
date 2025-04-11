@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Firestore</title>
+
+  <!-- Firebase SDK (compat version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Config Firebase Project lo
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_s-QXqEZo6h40ZmOUFXJghn8Yw_B4RNw",
+      authDomain: "resepmakananenak-fee3d.firebaseapp.com",
+      projectId: "resepmakananenak-fee3d",
+      storageBucket: "resepmakananenak-fee3d.appspot.com",
+      messagingSenderId: "701844805728",
+      appId: "1:701844805728:web:ed5e32fe22c7608ef7cb05"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Firestore reference
+    const db = firebase.firestore();
+
+    // Ambil data dari koleksi 'Bahan'
+    db.collection("Bahan").get().then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        console.log("Dokumen:", doc.id, doc.data());
+      });
+    });
+
+    
+
+  </script>
+</head>
+<body>
+  <h1>Cek Console buat liat data Firestore!</h1>
+
+  <div id="bahan-list"></div>
+
+  <script>
+  const listContainer = document.getElementById("bahan-list");
+
+  db.collection("Bahan").get().then((querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const item = document.createElement("div");
+      item.innerHTML = `
+        <h3>${doc.id}</h3>
+        <img src="${data.image_url}" alt="${doc.id}" width="200">
+      `;
+      listContainer.appendChild(item);
+    });
+  });
+  </script>
+</body>
+</html>

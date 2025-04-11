@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Insert Data Master Bahan</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+    // Konfigurasi Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_s-QXqEZo6h40ZmOUFXJghn8Yw_B4RNw",
+      authDomain: "resepmakananenak-fee3d.firebaseapp.com",
+      projectId: "resepmakananenak-fee3d",
+      storageBucket: "resepmakananenak-fee3d.appspot.com",
+      messagingSenderId: "701844805728",
+      appId: "1:701844805728:web:ed5e32fe22c7608ef7cb05"
+    };
+
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("dataMasterForm");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const nama = document.getElementById("nama").value;
+        const warnaDominan = document.getElementById("warnaDominan").value;
+        const bentuk = document.getElementById("bentuk").value;
+        const kategori = document.getElementById("kategori").value;
+        const deskripsi = document.getElementById("deskripsi").value;
+        const gambarReferensi = document.getElementById("gambarReferensi").value;
+
+        const newDoc = {
+          nama,
+          warnaDominan,
+          bentuk,
+          kategori,
+          deskripsi,
+          image: gambarReferensi
+        };
+
+        try {
+          await setDoc(doc(db, "DataMaster", nama), newDoc);
+          alert("✅ Data master berhasil ditambahkan!");
+          form.reset();
+        } catch (error) {
+          console.error("❌ Gagal menambahkan data:", error);
+          alert("❌ Gagal menambahkan data");
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <h2>Form Input Data Master Bahan</h2>
+  <form id="dataMasterForm">
+    <label>Nama: <input type="text" id="nama" required></label><br><br>
+    <label>Warna Dominan: <input type="text" id="warnaDominan" required></label><br><br>
+    <label>Bentuk: <input type="text" id="bentuk" required></label><br><br>
+    <label>Kategori: <input type="text" id="kategori" required></label><br><br>
+    <label>Deskripsi: <textarea id="deskripsi" required></textarea></label><br><br>
+    <label>Gambar Referensi (URL): <input type="url" id="gambarReferensi" required></label><br><br>
+    <button type="submit">Upload Data Master</button>
+  </form>
+</body>
+</html>

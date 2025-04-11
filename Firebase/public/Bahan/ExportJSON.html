@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Master Viewer</title>
+</head>
+<body>
+  <h2>🔥 Data Master Bahan Masakan</h2>
+  <button id="fetchBtn">Ambil Data</button>
+  <button id="downloadBtn" disabled>Download JSON</button>
+  <pre id="output" style="white-space: pre-wrap; background: #f4f4f4; padding: 10px;"></pre>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_s-QXqEZo6h40ZmOUFXJghn8Yw_B4RNw",
+      authDomain: "resepmakananenak-fee3d.firebaseapp.com",
+      projectId: "resepmakananenak-fee3d",
+      storageBucket: "resepmakananenak-fee3d.appspot.com",
+      messagingSenderId: "701844805728",
+      appId: "1:701844805728:web:ed5e32fe22c7608ef7cb05"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let jsonData = [];
+
+    document.getElementById("fetchBtn").addEventListener("click", async () => {
+      const snapshot = await getDocs(collection(db, "BahanMakanan", "BahanAja", "TelurGroup", "Telur", "Link"));
+      jsonData = [];
+      snapshot.forEach(doc => {
+        jsonData.push({ id: doc.id, ...doc.data() });
+      });
+
+      const formatted = JSON.stringify(jsonData, null, 2);
+      document.getElementById("output").textContent = formatted;
+      document.getElementById("downloadBtn").disabled = false;
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "data_master.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
