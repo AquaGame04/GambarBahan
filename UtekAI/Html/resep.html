@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detail Resep</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+      max-width: 700px;
+      margin: auto;
+    }
+    img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    ul {
+      padding-left: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="mealName">Loading...</h1>
+  <img id="mealImg" src="" alt="Gambar Makanan">
+  <h3>Bahan-bahan 🧂</h3>
+  <ul id="ingredientsList"></ul>
+  <h3>Langkah-langkah 👨‍🍳</h3>
+  <p id="instructions"></p>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`)
+      .then(res => res.json())
+      .then(data => {
+        const meal = data.meals[0];
+        document.getElementById("mealName").textContent = meal.strMeal;
+        document.getElementById("mealImg").src = meal.strMealThumb;
+        document.getElementById("instructions").textContent = meal.strInstructions;
+
+        const ingredientsList = document.getElementById("ingredientsList");
+        for (let i = 1; i <= 20; i++) {
+          const ingredient = meal[`strIngredient${i}`];
+          const measure = meal[`strMeasure${i}`];
+          if (ingredient && ingredient.trim() !== "") {
+            const li = document.createElement("li");
+            li.textContent = `${ingredient} - ${measure}`;
+            ingredientsList.appendChild(li);
+          }
+        }
+      })
+      .catch(err => {
+        document.getElementById("mealName").textContent = "Gagal mengambil data resep!";
+        console.error(err);
+      });
+      function handleIngredientSearch() {
+      const ingredient = document.getElementById('ingredientInput').value.trim();
+      if (!ingredient) return alert("Masukin bahan dulu dong 😅");
+
+      fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${ingredient}`)
+        .then(res => res.json())
+        .then(data => {
+          renderRecipes(data.meals);
+        })
+        .catch(err => {
+          console.error("Error fetch resep by ingredient:", err);
+          renderRecipes([]);
+        });
+    }
+
+    function handleQuerySearch() {
+      const query = document.getElementById('searchQuery').value.trim();
+      if (!query) return alert("Masukin keyword dulu dong 😅");
+
+      fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`)
+        .then(res => res.json())
+        .then(data => {
+          renderRecipes(data.meals);
+        })
+        .catch(err => {
+          console.error("Error fetch resep by query:", err);
+          renderRecipes([]);
+        });
+    }
+
+    function renderRecipes(recipes) {
+      const container = document.getElementById('recipesContainer');
+      container.innerHTML = '';
+
+      if (!recipes || recipes.length === 0) {
+        container.innerHTML = '<p>Resep gak ketemu 😔</p>';
+        return;
+      }
+
+      recipes.forEach(meal => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h4>${meal.strMeal}</h4>
+          <img src="${meal.strMealThumb}" alt="${meal.strMeal}">
+          <a href="resep.html?id=${meal.idMeal}">Lihat Resep</a>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

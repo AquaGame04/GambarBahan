@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Website Resep Makanan 🍽️</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fdfdfd;
+      color: #333;
+    }
+    header {
+      background-color: #ff914d;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    main {
+      padding: 2rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin: 0.25rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #ff914d;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .recipes, .categories {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 250px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .card img {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+    }
+    .card:hover {
+      background-color: #f7f7f7;
+    }
+    .card a {
+      display: inline-block;
+      margin-top: 0.5rem;
+      color: #ff914d;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>Website Resep Makanan 🍽️</header>
+  <main>
+    <input type="text" id="ingredientInput" placeholder="Cari resep berdasarkan bahan..." />
+    <button onclick="handleIngredientSearch()">Cari Resep</button>
+    <div id="recipesContainer" class="recipes"></div>
+  </main>
+  <script>
+    async function handleIngredientSearch() {
+      const input = document.getElementById('ingredientInput').value;
+      const keyword = input.trim();
+      const container = document.getElementById('recipesContainer');
+      container.innerHTML = '<p>Loading...</p>';
+
+      if (!keyword) {
+        container.innerHTML = '<p>Masukkan kata kunci bahan terlebih dahulu.</p>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(keyword)}`);
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+
+        const data = await res.json();
+
+        if (!data.meals) {
+          container.innerHTML = '<p>Tidak ditemukan resep dengan bahan tersebut.</p>';
+          return;
+        }
+
+        container.innerHTML = '';
+        data.meals.forEach(meal => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <h3>${meal.strMeal}</h3>
+            <img src="${meal.strMealThumb}" alt="${meal.strMeal}" />
+            <a href="https://www.themealdb.com/meal/${meal.idMeal}" target="_blank">Lihat Resep</a>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Error fetching:', err);
+        container.innerHTML = '<p>Terjadi kesalahan saat mengambil data. Coba lagi nanti.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
