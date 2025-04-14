@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Data Firestore</title>
+</head>
+<body>
+  <h2>🛠️ Edit Data Firestore</h2>
+
+  <label for="collectionSelect">Pilih Koleksi:</label>
+  <select id="collectionSelect">
+    <option value="">-- Pilih Koleksi --</option>
+    <option value="DataMaster">DataMaster</option>
+    <option value="ResepMaster">ResepMaster</option>
+    <option value="HistoryMaster">History</option>
+  </select>
+  <button id="loadBtn">🔄 Load Data</button>
+  <br><br>
+
+  <table id="dataTable" border="1" cellpadding="5" style="border-collapse: collapse;">
+    <thead><tr><th>ID</th><th>Data</th><th>Aksi</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_s-QXqEZo6h40ZmOUFXJghn8Yw_B4RNw",
+      authDomain: "resepmakananenak-fee3d.firebaseapp.com",
+      projectId: "resepmakananenak-fee3d",
+      storageBucket: "resepmakananenak-fee3d.appspot.com",
+      messagingSenderId: "701844805728",
+      appId: "1:701844805728:web:ed5e32fe22c7608ef7cb05"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const loadBtn = document.getElementById("loadBtn");
+    const tableBody = document.querySelector("#dataTable tbody");
+
+    loadBtn.addEventListener("click", async () => {
+      const collectionName = document.getElementById("collectionSelect").value;
+      if (!collectionName) {
+        alert("Pilih koleksi dulu dong 😅");
+        return;
+      }
+
+      tableBody.innerHTML = "⏳ Loading...";
+      const snapshot = await getDocs(collection(db, collectionName));
+
+      tableBody.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${id}</td>
+          <td><textarea style="width:300px; height:100px">${JSON.stringify(data, null, 2)}</textarea></td>
+          <td><button class="saveBtn" data-id="${id}">💾 Simpan</button></td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      document.querySelectorAll(".saveBtn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const id = btn.getAttribute("data-id");
+          const row = btn.closest("tr");
+          const jsonText = row.querySelector("textarea").value;
+
+          try {
+            const newData = JSON.parse(jsonText);
+            await updateDoc(doc(db, document.getElementById("collectionSelect").value, id), newData);
+            alert(`✅ Data "${id}" berhasil disimpan!`);
+          } catch (err) {
+            alert(`❌ Gagal menyimpan data "${id}": ${err.message}`);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -5,9 +5,18 @@
   <title>Data Master Viewer</title>
 </head>
 <body>
-  <h2>🔥 Data Master Bahan Masakan</h2>
-  <button id="fetchBtn">Ambil Data</button>
+  <h2>🔥 Data Viewer Firebase</h2>
+  
+  <label for="collectionSelect">Pilih Koleksi:</label>
+  <select id="collectionSelect">
+    <option value="">-- Pilih Koleksi --</option>
+    <option value="DataMaster">DataMaster</option>
+    <option value="ResepMaster">ResepMaster</option>
+  </select>
+
+  <button id="fetchBtn" disabled>Ambil Data</button>
   <button id="downloadBtn" disabled>Download JSON</button>
+  
   <pre id="output" style="white-space: pre-wrap; background: #f4f4f4; padding: 10px;"></pre>
 
   <script type="module">
@@ -28,24 +37,37 @@
 
     let jsonData = [];
 
-    document.getElementById("fetchBtn").addEventListener("click", async () => {
-      const snapshot = await getDocs(collection(db, "BahanMakanan", "BahanAja", "TelurGroup", "Telur", "Link"));
+    const fetchBtn = document.getElementById("fetchBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const collectionSelect = document.getElementById("collectionSelect");
+    const output = document.getElementById("output");
+
+    // Aktifkan tombol fetch kalau sudah pilih koleksi
+    collectionSelect.addEventListener("change", () => {
+      fetchBtn.disabled = collectionSelect.value === "";
+    });
+
+    fetchBtn.addEventListener("click", async () => {
+      const selectedCollection = collectionSelect.value;
+      if (!selectedCollection) return;
+
+      const snapshot = await getDocs(collection(db, selectedCollection));
       jsonData = [];
       snapshot.forEach(doc => {
         jsonData.push({ id: doc.id, ...doc.data() });
       });
 
       const formatted = JSON.stringify(jsonData, null, 2);
-      document.getElementById("output").textContent = formatted;
-      document.getElementById("downloadBtn").disabled = false;
+      output.textContent = formatted;
+      downloadBtn.disabled = false;
     });
 
-    document.getElementById("downloadBtn").addEventListener("click", () => {
+    downloadBtn.addEventListener("click", () => {
       const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "data_master.json";
+      a.download = "data_firebase.json";
       a.click();
       URL.revokeObjectURL(url);
     });

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Import JSON ke Firestore</title>
+</head>
+<body>
+  <h2>📦 Import JSON ke Firestore</h2>
+
+  <label for="collectionSelect">Pilih Koleksi:</label>
+  <select id="collectionSelect">
+    <option value="">-- Pilih Koleksi --</option>
+    <option value="DataMaster">DataMaster</option>
+    <option value="ResepMaster">ResepMaster</option>
+  </select><br><br>
+
+  <label for="fileInput">Pilih File JSON:</label>
+  <input type="file" id="fileInput" accept=".json"><br><br>
+
+  <button id="importBtn" disabled>Import ke Firestore</button>
+  <pre id="status" style="white-space: pre-wrap; background: #f0f0f0; padding: 10px;"></pre>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_s-QXqEZo6h40ZmOUFXJghn8Yw_B4RNw",
+      authDomain: "resepmakananenak-fee3d.firebaseapp.com",
+      projectId: "resepmakananenak-fee3d",
+      storageBucket: "resepmakananenak-fee3d.appspot.com",
+      messagingSenderId: "701844805728",
+      appId: "1:701844805728:web:ed5e32fe22c7608ef7cb05"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const collectionSelect = document.getElementById("collectionSelect");
+    const fileInput = document.getElementById("fileInput");
+    const importBtn = document.getElementById("importBtn");
+    const statusOutput = document.getElementById("status");
+
+    function checkReady() {
+      importBtn.disabled = !(collectionSelect.value && fileInput.files.length > 0);
+    }
+
+    collectionSelect.addEventListener("change", checkReady);
+    fileInput.addEventListener("change", checkReady);
+
+    importBtn.addEventListener("click", async () => {
+      const file = fileInput.files[0];
+      const selectedCollection = collectionSelect.value;
+
+      if (!file || !selectedCollection) return;
+
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          let success = 0;
+
+          for (const item of data) {
+            const docId = item.id || item.nama || crypto.randomUUID(); // fallback ID
+            const { id, ...payload } = item; // remove id if exists
+            await setDoc(doc(db, selectedCollection, docId), payload);
+            success++;
+          }
+
+          statusOutput.textContent = `✅ Berhasil import ${success} data ke koleksi "${selectedCollection}"`;
+        } catch (err) {
+          statusOutput.textContent = `❌ Gagal mengimpor data: ${err}`;
+        }
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
